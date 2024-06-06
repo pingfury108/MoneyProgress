@@ -2,50 +2,68 @@ import Image from "next/image";
 
 export default function Home() {
   return (
-    <main className="flex min-h-screen flex-col items-center justify-between p-24">
-      <div className="z-10 w-full max-w-5xl items-center justify-between font-mono text-sm lg:flex">
-        <div>
-          挣钱的进度条，得是老板给我的欠条
-        </div>
-
-        <div className="grid grid-cols-2 place-items-center">
-          <div className="col-span-1">
-            <label>上班于</label>
-            <input type="time"></input>
-          </div>
-          <div className="col-span-1">
-            <label>下班与</label>
-            <input type="time"></input>
-          </div>
-        </div>
-
-        <div>是否有午休</div>
-
-        <div className="grid grid-cols-2">
-          <div >
-            <label>午休开始于 </label>
-            <input type="time"></input>
-          </div>
-          <div>
-            <label>午休结束于</label>
-            <input type="time"></input>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-2">
-          <div>
-            <label>月薪</label>
-            <input type="number"></input>
-            <label>CNY</label>
-          </div>
-
-          <div>
-            <span>一个月工作</span>
-            <input type="number"></input>
-            <span>天</span>
-          </div>
-        </div>
+    <main className="container">
+      <div className="container text-center pt-10">
+        <h3>钱条</h3>
       </div>
-    </main>
+      <div className="container text-center w-full py-2">
+        挣钱的进度条，得是老板给我的欠条。
+      </div>
+      <div className="container py-2">
+        <div className="grid grid-cols-4 gap-2">
+          <div className="container col-end-3">
+            <div className="grid grid-cols-2">
+              <label >上班于</label>
+              <input type="time" defaultValue={"08:00"}></input>
+            </div>
+          </div>
+          <div className="container col-start-3">
+            <div className="grid grid-cols-2">
+              <label>下班于</label>
+              <input type="time" defaultValue={"19:00"}></input>
+            </div>
+          </div>
+        </div>
+        <div className="grid grid-cols-4 gap-2">
+          <div className="col-end-3">
+            <input type="checkbox"></input>
+            <span>是否有午休</span>
+          </div>
+        </div>
+        <div className="grid grid-cols-4 gap-2">
+          <div className="container col-end-3">
+            <div className="grid grid-cols-2">
+              <label>午休开始于</label>
+              <input type="time" defaultValue={"12:00"}></input>
+            </div>
+          </div>
+          <div className="container col-start-3">
+            <div className="grid grid-cols-2">
+              <label>午休结束于</label>
+              <input type="time" defaultValue={"14:00"}></input>
+            </div>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-4 gap-2">
+          <div className="container col-end-3">
+            <div className="grid grid-cols-2">
+              <div>月薪</div>
+              <div className="grid grid-cols-2">
+                <input type="number" defaultValue={3000}></input>
+                <span>CNY</span>
+              </div>
+            </div>
+          </div>
+          <div className="container col-start-3">
+            <div className="grid grid-cols-3">
+              <span>一个月工作</span>
+              <input type="number" defaultValue={20}></input>
+              <span>天</span>
+            </div>
+          </div>
+        </div>
+      </div >
+    </main >
   );
 }
