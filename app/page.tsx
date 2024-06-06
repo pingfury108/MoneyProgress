@@ -1,16 +1,17 @@
-import Image from "next/image";
+import { Progress } from "@nextui-org/progress";
 
 export default function Home() {
   return (
     <main className="container">
       <div className="container text-center pt-10">
-        <h3>钱条</h3>
+        <h3 className="text-2xl font-bold">钱条</h3>
       </div>
-      <div className="container text-center w-full py-2">
+      <div className="container text-center w-full py-2 text-xl">
         挣钱的进度条，得是老板给我的欠条。
       </div>
-      <div className="container py-2">
-        <div className="grid grid-cols-4 gap-2">
+      <Progress aria-label="Loading..." value={60} className="max-w-md h-10" showValueLabel={true} size="md" disableAnimation={true} />
+      <div className="container">
+        <div className="grid grid-cols-4 gap-2 py-1">
           <div className="container col-end-3">
             <div className="grid grid-cols-2">
               <label >上班于</label>
@@ -24,13 +25,13 @@ export default function Home() {
             </div>
           </div>
         </div>
-        <div className="grid grid-cols-4 gap-2">
+        <div className="grid grid-cols-4 gap-2 py-1">
           <div className="col-end-3">
             <input type="checkbox"></input>
             <span>是否有午休</span>
           </div>
         </div>
-        <div className="grid grid-cols-4 gap-2">
+        <div className="grid grid-cols-4 gap-2 py-1">
           <div className="container col-end-3">
             <div className="grid grid-cols-2">
               <label>午休开始于</label>
@@ -45,21 +46,23 @@ export default function Home() {
           </div>
         </div>
 
-        <div className="grid grid-cols-4 gap-2">
+        <div className="grid grid-cols-4 gap-2 py-1">
           <div className="container col-end-3">
             <div className="grid grid-cols-2">
-              <div>月薪</div>
-              <div className="grid grid-cols-2">
-                <input type="number" defaultValue={3000}></input>
+              <span>月薪</span>
+              <div className="grid grid-cols-5 border rounded border-dashed">
+                <input type="number" defaultValue={3000} className="col-span-3 border-none"></input>
                 <span>CNY</span>
               </div>
             </div>
           </div>
           <div className="container col-start-3">
-            <div className="grid grid-cols-3">
+            <div className="grid grid-cols-2">
               <span>一个月工作</span>
-              <input type="number" defaultValue={20}></input>
-              <span>天</span>
+              <div className="grid grid-cols-5 border rounded border-dashed">
+                <input type="number" defaultValue={20} className="col-span-4 border-none"></input>
+                <span>天</span>
+              </div>
             </div>
           </div>
         </div>

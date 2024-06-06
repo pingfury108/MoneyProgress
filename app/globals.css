@@ -3,13 +3,19 @@
 @tailwind utilities;
 
 body {
-  background-color: rgb(24 24 27);
+  /*
+  background-color: rgb(15 23 42);
+*/
+  background-color: rgb(31 41 55);
   color: white;
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
   font-weight: 500;
 }
 
 input {
-  background-color: rgb(24 24 27);
+  background-color: rgb(75 85 99);
   color: white;
+  border-radius: 0.25rem;
+  border-width: 1px;
+  border-style: dashed;
 }
