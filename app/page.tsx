@@ -9,8 +9,16 @@ export default function Home() {
       <div className="container text-center w-full py-2 text-xl">
         挣钱的进度条，得是老板给我的欠条。
       </div>
-      <Progress aria-label="Loading..." value={60} className="max-w-md h-10" showValueLabel={true} size="md" disableAnimation={true} />
       <div className="container">
+        <div className="grid grid-cols-4 gap-2 py-1">
+          <Progress color="primary" aria-label="Loading..." value={99}
+            size="sm"
+            radius="sm"
+            className="max-w-md col-start-2 col-span-2"
+            showValueLabel={true}
+            disableAnimation={true}
+          />
+        </div>
         <div className="grid grid-cols-4 gap-2 py-1">
           <div className="container col-end-3">
             <div className="grid grid-cols-2">
