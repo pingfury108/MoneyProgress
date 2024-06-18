@@ -3,7 +3,7 @@
 import { Checkbox } from "@nextui-org/checkbox";
 import { Input } from "@nextui-org/input";
 import { Progress } from "@nextui-org/progress";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 
 interface Cfg {
   start_work_time: string
@@ -15,6 +15,20 @@ interface Cfg {
   work_day: number
 }
 
+function timeSecondDiff(t1: string, t2: string) {
+  const time1 = new Date(`2000-01-01T${t1}`);
+  const time2 = new Date(`2000-01-01T${t2}`);
+  const timeDiff = Math.abs(time1 - time2);
+  const secondsDiff = timeDiff / 1000;
+  return secondsDiff
+}
+
+function currentTime(now) {
+  const hours = now.getHours().toString().padStart(2, '0'); // 获取当前小时并补零
+  const minutes = now.getMinutes().toString().padStart(2, '0'); // 获取当前分钟并补零
+
+  return `${hours}:${minutes}`;
+}
 export default function Home() {
   const cfg: Cfg = {
     start_work_time: "08:00",
@@ -33,6 +47,22 @@ export default function Home() {
   const [end_lunch_time, setEndLunchTime] = useState(cfg.end_lunch_time)
   const [monthly_salary, setMonthlySalary] = useState(cfg.monthly_salary)
   const [work_day, setWorkDay] = useState(cfg.work_day)
+
+  const [nowTime, setNowTime] = useState(new Date());
+  const [progressValue, setProgressValue] = useState(timeSecondDiff(start_work_time, currentTime(nowTime)))
+  const [progressMaxValue, setProgressMaxValue] = useState(timeSecondDiff(start_work_time, end_work_time))
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setNowTime(new Date());
+      setProgressValue(prevProgressValue => timeSecondDiff(start_work_time, currentTime(nowTime)));
+      setProgressMaxValue(prevProgressMaxValue => timeSecondDiff(start_work_time, end_work_time));
+      console.log("update now time");
+    }, 1000); // 每秒触发一次
+
+    return () => {
+      clearInterval(interval);
+    };
+  }, []);
 
 
   const LunchHtml = () => {
@@ -62,7 +92,8 @@ export default function Home() {
       </div>
       <div className="container">
         <div className="container  grid grid-cols-4 gap-2 py-1">
-          <Progress color="primary" aria-label="Loading..." value={55}
+          <Progress color="primary" aria-label="Loading..." value={progressValue}
+            maxValue={progressMaxValue}
             size="lg"
             radius="lg"
             className="max-w-md col-start-2 col-span-2"
