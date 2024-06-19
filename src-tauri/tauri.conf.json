@@ -9,13 +9,12 @@
     "frontendDist": "../dist"
   },
   "app": {
+    "withGlobalTauri": true,
     "windows": [
       {
         "title": "MoneyProgress",
-        "width": 800,
-        "minWidth": 800,
-        "height": 600,
-        "minHeight": 600,
+        "width": 850,
+        "height": 650,
         "resizable": true,
         "fullscreen": false
       }

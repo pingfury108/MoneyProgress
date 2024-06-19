@@ -3,6 +3,7 @@
 import { Checkbox } from "@nextui-org/checkbox";
 import { Input } from "@nextui-org/input";
 import { Progress } from "@nextui-org/progress";
+import { invoke } from "@tauri-apps/api/core";
 import React, { useEffect, useState } from "react";
 
 interface Cfg {
@@ -31,11 +32,11 @@ function currentTime(now) {
 }
 export default function Home() {
   const cfg: Cfg = {
-    start_work_time: "08:00",
-    end_work_time: "19:00",
+    start_work_time: "08:00:00",
+    end_work_time: "19:00:00",
     lunch: false,
-    start_lunch_time: "12:00",
-    end_lunch_time: "14:00",
+    start_lunch_time: "12:00:00",
+    end_lunch_time: "14:00:00",
     monthly_salary: 3000,
     work_day: 20,
   }
@@ -49,13 +50,23 @@ export default function Home() {
   const [work_day, setWorkDay] = useState(cfg.work_day)
 
   const [nowTime, setNowTime] = useState(new Date());
-  const [progressValue, setProgressValue] = useState(timeSecondDiff(start_work_time, currentTime(nowTime)))
-  const [progressMaxValue, setProgressMaxValue] = useState(timeSecondDiff(start_work_time, end_work_time))
+  const [progressValue, setProgressValue] = useState(0);
+  const [progressMaxValue, setProgressMaxValue] = useState(100);
+
   useEffect(() => {
     const interval = setInterval(() => {
       setNowTime(new Date());
-      setProgressValue(prevProgressValue => timeSecondDiff(start_work_time, currentTime(nowTime)));
-      setProgressMaxValue(prevProgressMaxValue => timeSecondDiff(start_work_time, end_work_time));
+      invoke("max_time_value", { start: start_work_time, end: end_work_time })
+        .then(v => {
+          setProgressMaxValue(v);
+          console.log(v, "max time value");
+        })
+
+      invoke("max_time_value", { start: start_work_time, end: `${nowTime.getHours()}:${nowTime.getMinutes()}:${nowTime.getSeconds()}` })
+        .then(v => {
+          setProgressValue(v);
+          console.log(v, "now time value");
+        })
       console.log("update now time");
     }, 1000); // 每秒触发一次
 
@@ -64,23 +75,21 @@ export default function Home() {
     };
   }, []);
 
-
   const LunchHtml = () => {
     if (lunch) {
       return (
-        <div className="grid grid-cols-4 gap-2 py-1">
-          <div className="container col-end-3">
-            <Input label="午休开始于" labelPlacement="outside-left" type="time" defaultValue={"12:00"} value={start_lunch_time} onChange={(event) => { setStartLunchTime(event?.target.value) }} />
+        <div className="grid grid-cols-6 gap-2 py-1">
+          <div className="container col-end-4 col-span-2">
+            <Input label="午休始" labelPlacement="outside-left" type="time" defaultValue={"12:00:00"} value={start_lunch_time} onChange={(event) => { setStartLunchTime(event?.target.value) }} />
           </div>
-          <div className="container col-start-3">
-            <Input label="午休结束于" labelPlacement="outside-left" type="time" defaultValue={"14:00"} value={end_lunch_time} onChange={(event) => { setEndLunchTime(event?.target.value) }} />
+          <div className="container col-start-4 col-spna-2">
+            <Input label="午休止" labelPlacement="outside-left" type="time" defaultValue={"14:00:00"} value={end_lunch_time} onChange={(event) => { setEndLunchTime(event?.target.value) }} />
           </div>
         </div>
       )
     }
     return null
   }
-
 
   return (
     <main className="container">
@@ -91,38 +100,36 @@ export default function Home() {
         挣钱的进度条，得是老板给我的欠条。
       </div>
       <div className="container">
-        <div className="container  grid grid-cols-4 gap-2 py-1">
+        <div className="container grid grid-cols-6 gap-2 py-1">
           <Progress color="primary" aria-label="Loading..." value={progressValue}
             maxValue={progressMaxValue}
             size="lg"
             radius="lg"
-            className="max-w-md col-start-2 col-span-2"
+            className="max-w-md col-start-2 col-span-4"
             showValueLabel={true}
-            disableAnimation={true}
+            disableAnimation={false}
           />
         </div>
-        <div className="grid grid-cols-4 gap-2 py-1">
-          <div className="container col-end-3">
-            <Input label="上班于" labelPlacement="outside-left" type="time" defaultValue={"08:00"} value={start_work_time} onChange={(event) => { setStartWorkTime(event?.target.value) }} />
+        <div className="grid grid-cols-6 gap-2 py-1">
+          <div className="container col-end-4 col-span-2  w-full">
+            <Input label=<div className="container">上班于</div> labelPlacement="outside-left" type="time" defaultValue={"08:00:00"} value={start_work_time} onChange={(event) => { setStartWorkTime(event?.target.value) }} />
           </div>
-          <div className="container col-start-3">
-            <Input label="下班于" labelPlacement="outside-left" type="time" defaultValue={"19:00"} value={end_work_time} onChange={(event) => { setEndWorkTime(event?.target.value) }} />
+          <div className="container col-start-4 col-span-2">
+            <Input label="下班于" labelPlacement="outside-left" type="time" defaultValue={"19:00:00"} value={end_work_time} onChange={(event) => { setEndWorkTime(event?.target.value) }} />
           </div>
         </div>
-        <div className="grid grid-cols-4 gap-2 py-1">
-          <div className="col-end-3 flex items-center">
+        <div className="grid grid-cols-6 gap-2 py-1">
+          <div className="col-start-2 flex items-center">
             <Checkbox radius="sm" size="sm" value={String(lunch)} onChange={(event) => { setLunch(event.target.checked) }}>是否有午休</Checkbox>
           </div>
         </div>
         <LunchHtml />
-        <div className="grid grid-cols-4 gap-2 py-1">
-          <div className="container col-end-3">
-            <div className="">
-              <Input label="月薪" labelPlacement="outside-left" type="number" placeholder="3000" value={monthly_salary.toString()} onChange={(event) => { setMonthlySalary(Number(event?.target.value)) }} />
-            </div>
+        <div className="grid grid-cols-6 gap-2 py-1">
+          <div className="container col-end-4 col-span-2">
+            <Input label="月薪" labelPlacement="outside-left" type="number" placeholder="3000" value={monthly_salary.toString()} onChange={(event) => { setMonthlySalary(Number(event?.target.value)) }} />
           </div>
-          <div className="container col-start-3">
-            <Input label="工作天数" type="number" labelPlacement="outside-left" placeholder="20" value={work_day.toString()} onChange={(event) => { setWorkDay(Number(event?.target.value)) }} />
+          <div className="container col-start-4 col-span-2">
+            <Input label="天数" type="number" labelPlacement="outside-left" placeholder="20" value={work_day.toString()} onChange={(event) => { setWorkDay(Number(event?.target.value)) }} />
           </div>
         </div>
       </div >
