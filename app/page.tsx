@@ -16,20 +16,6 @@ interface Cfg {
   work_day: number
 }
 
-function timeSecondDiff(t1: string, t2: string) {
-  const time1 = new Date(`2000-01-01T${t1}`);
-  const time2 = new Date(`2000-01-01T${t2}`);
-  const timeDiff = Math.abs(time1 - time2);
-  const secondsDiff = timeDiff / 1000;
-  return secondsDiff
-}
-
-function currentTime(now) {
-  const hours = now.getHours().toString().padStart(2, '0'); // 获取当前小时并补零
-  const minutes = now.getMinutes().toString().padStart(2, '0'); // 获取当前分钟并补零
-
-  return `${hours}:${minutes}`;
-}
 export default function Home() {
   const cfg: Cfg = {
     start_work_time: "08:00:00",
@@ -49,31 +35,41 @@ export default function Home() {
   const [monthly_salary, setMonthlySalary] = useState(cfg.monthly_salary)
   const [work_day, setWorkDay] = useState(cfg.work_day)
 
-  const [nowTime, setNowTime] = useState(new Date());
+  const [salary_second, setSalarySecond] = useState(0);
   const [progressValue, setProgressValue] = useState(0);
   const [progressMaxValue, setProgressMaxValue] = useState(100);
 
   useEffect(() => {
     const interval = setInterval(() => {
-      setNowTime(new Date());
-      invoke("max_time_value", { start: start_work_time, end: end_work_time })
+      invoke("work_time_value")
         .then(v => {
           setProgressMaxValue(v);
           console.log(v, "max time value");
         })
 
-      invoke("max_time_value", { start: start_work_time, end: `${nowTime.getHours()}:${nowTime.getMinutes()}:${nowTime.getSeconds()}` })
+      invoke("already_work_time_value")
         .then(v => {
           setProgressValue(v);
           console.log(v, "now time value");
         })
       console.log("update now time");
+
+      invoke("already_gotit", { "seconds": 1 })
+        .then(v => {
+          setSalarySecond(v);
+          console.log("salary second", v);
+        })
     }, 1000); // 每秒触发一次
 
     return () => {
       clearInterval(interval);
     };
   }, []);
+
+  useEffect(() => {
+    console.log("cfg  changed:", start_work_time, end_work_time);
+  }, [start_work_time, end_work_time]); // 依赖项数组，指定监听 count 状态值
+
 
   const LunchHtml = () => {
     if (lunch) {
@@ -101,10 +97,10 @@ export default function Home() {
       </div>
       <div className="container">
         <div className="container grid grid-cols-6 gap-2 py-1">
-          <Progress color="primary" aria-label="Loading..." value={progressValue}
+          <Progress color="primary" label="今日进度" value={progressValue}
             maxValue={progressMaxValue}
             size="lg"
-            radius="lg"
+            radius="full"
             className="max-w-md col-start-2 col-span-4"
             showValueLabel={true}
             disableAnimation={false}
@@ -131,6 +127,12 @@ export default function Home() {
           <div className="container col-start-4 col-span-2">
             <Input label="天数" type="number" labelPlacement="outside-left" placeholder="20" value={work_day.toString()} onChange={(event) => { setWorkDay(Number(event?.target.value)) }} />
           </div>
+        </div>
+        <div className="text-sm italic pt-3" >
+          <p>这么看来, 假设一个月工作 {work_day} 天:</p>
+          <p>您一天能挣 {salary_second * progressMaxValue} </p>
+          <p>您一天有效工时 {progressMaxValue / (60 * 60)} 小时</p>
+          <p>您一秒中能挣 {salary_second} </p>
         </div>
       </div >
     </main >
