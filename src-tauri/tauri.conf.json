@@ -1,12 +1,12 @@
 {
   "productName": "money-progress",
   "version": "0.1.0",
-  "identifier": "top.pfy.money_progress",
+  "identifier": "top.pfy.moneyprogress",
   "build": {
     "beforeDevCommand": "npm run dev",
     "beforeBuildCommand": "npm run build",
     "devUrl": "http://localhost:3000",
-    "frontendDist": "../dist"
+    "frontendDist": "../out"
   },
   "app": {
     "withGlobalTauri": true,

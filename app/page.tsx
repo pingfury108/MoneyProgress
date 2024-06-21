@@ -43,20 +43,20 @@ export default function Home() {
     const interval = setInterval(() => {
       invoke("work_time_value")
         .then(v => {
-          setProgressMaxValue(v);
+          setProgressMaxValue(Number(v));
           console.log(v, "max time value");
         })
 
       invoke("already_work_time_value")
         .then(v => {
-          setProgressValue(v);
+          setProgressValue(Number(v));
           console.log(v, "now time value");
         })
       console.log("update now time");
 
       invoke("already_gotit", { "seconds": 1 })
         .then(v => {
-          setSalarySecond(v);
+          setSalarySecond(Number(v));
           console.log("salary second", v);
         })
     }, 1000); // 每秒触发一次
