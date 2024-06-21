@@ -14,7 +14,10 @@ jobs:
     runs-on: ${{ matrix.platform }}
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
+
+      - name: setup node
+        uses: actions/setup-node@v4
 
       - name: Install dependencies (ubuntu only)
         if: matrix.platform == 'ubuntu-20.04'
@@ -30,6 +33,9 @@ jobs:
         uses: swatinem/rust-cache@v2
         with:
           workspaces: './src-tauri -> target'
+
+      - name: install frontend dependencies
+        run: npm install
 
       - name: Build the app
         uses: tauri-apps/tauri-action@v0
