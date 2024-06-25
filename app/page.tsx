@@ -41,7 +41,7 @@ export default function Home() {
   }, []);
 
   function updateCfg(key: string, value: any) {
-    setCfg(produce(cfg, draft => {
+    setCfg(produce(cfg, (draft: typeof cfg) => {
       draft[key] = value;
     }));
 
