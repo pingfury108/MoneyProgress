@@ -3,6 +3,7 @@ use std::sync::Mutex;
 use chrono::{Local, NaiveTime};
 use serde::{Deserialize, Serialize};
 use tauri::{command, generate_handler, State};
+use tauri_plugin_store;
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 struct Cfg {
@@ -93,7 +94,9 @@ fn update_cfg(data: Cfg, cfg: State<'_, CfgState>) {
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
+        .plugin(tauri_plugin_store::Builder::default().build())
         .manage(CfgState(Default::default()))
+        //.setup(|app|)
         .invoke_handler(generate_handler![
             diff_time_value,
             work_time_value,
