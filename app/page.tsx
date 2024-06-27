@@ -11,7 +11,6 @@ function toTimeValue(s: any) {
   if (!s) {
     return parseTime("00:00:00")
   }
-  console.log("ccccc", s)
   return parseTime(s)
 }
 
@@ -32,12 +31,10 @@ export default function Home() {
       invoke("work_time_value")
         .then(v => {
           setProgressMaxValue(Number(v));
-          console.log(v, "max time value");
         });
       invoke("already_gotit", { "seconds": 1 })
         .then(v => {
           setSalarySecond(Number(v));
-          console.log("salary second", v);
         });
     }
   }, [initialized]);
@@ -48,9 +45,7 @@ export default function Home() {
       invoke("already_work_time_value")
         .then(v => {
           setProgressValue(Number(v));
-          console.log(v, "now time value");
         })
-      console.log("update now time");
     }, 1000);// 每秒触发一次
 
     return () => {
@@ -70,12 +65,10 @@ export default function Home() {
     invoke("work_time_value")
       .then(v => {
         setProgressMaxValue(Number(v));
-        console.log(v, "max time value");
       });
     invoke("already_gotit", { "seconds": 1 })
       .then(v => {
         setSalarySecond(Number(v));
-        console.log("salary second", v);
       });
   };
 
@@ -118,10 +111,10 @@ export default function Home() {
         </div>
         <div className="grid grid-cols-6 gap-2 py-1">
           <div className="col-start-2 flex items-center">
-            <Checkbox radius="sm" size="sm" value={String(cfg.lunch)} onChange={(event) => { updateCfg("lunch", event.target.checked) }}>是否有午休</Checkbox>
+            <Checkbox radius="sm" size="sm" defaultSelected={cfg.lunch} value={String(cfg.lunch)} onChange={(event) => { updateCfg("lunch", !event.target.checked) }}>是否有午休</Checkbox>
           </div>
         </div>
-        <div className={`grid grid-cols-6 gap-2 py-1 ${cfg.lunch ? 'block' : 'hidden'}`}>
+        <div className={`grid grid-cols-6 gap-2 py-1 ${!cfg.lunch ? 'block' : 'hidden'}`}>
           <div className="container col-end-4 col-span-2">
             <TimeInput label="午休始" labelPlacement="outside-left"
               hourCycle={24}
@@ -136,22 +129,24 @@ export default function Home() {
           </div>
         </div>
         <div className="grid grid-cols-6 gap-2 py-1">
-          <div className="container col-end-4 col-span-2">
+          <div className="container col-end-4 col-span-2 w-full">
             <Input label="月薪" labelPlacement="outside-left" type="number" placeholder="3000"
               value={cfg.monthly_salary}
               onChange={(event) => { updateCfg("monthly_salary", Number(event?.target.value)) }} />
           </div>
-          <div className="container col-start-4 col-span-2">
+          <div className="col-start-4 col-span-2 w-full">
             <Input label="天数" type="number" labelPlacement="outside-left" placeholder="20"
               value={cfg.work_day}
               onChange={(event) => { updateCfg("work_day", Number(event?.target.value)) }} />
           </div>
         </div>
-        <div className="text-sm italic pt-3" >
+        <div className="text-sm italic pt-3 pl-3" >
           <p>这么看来, 假设一个月工作 {cfg.work_day} 天:</p>
           <p>您一天能挣 {salary_second * progressMaxValue} </p>
           <p>您一天有效工时 {progressMaxValue / (60 * 60)} 小时</p>
-          <p>您一秒中能挣 {salary_second} </p>
+          <p>您一秒中能挣 {salary_second.toFixed(3)} </p>
+          <p></p>
+          <p>今日已赚: {(salary_second * progressValue).toFixed(3)} </p>
         </div>
       </div >
     </main >
