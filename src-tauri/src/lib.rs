@@ -2,8 +2,9 @@ use std::sync::Mutex;
 
 use chrono::{Local, NaiveTime};
 use serde::{Deserialize, Serialize};
-use tauri::{command, generate_handler, State};
-use tauri_plugin_store;
+use std::path::PathBuf;
+use tauri::{command, generate_handler, AppHandle, Manager, State, Wry};
+use tauri_plugin_store::{with_store, StoreCollection};
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 struct Cfg {
@@ -43,13 +44,32 @@ impl Cfg {
     }
     pub fn already_work_time_value(&self) -> i64 {
         let now = Local::now();
-        diff_time_value(
-            &self.start_work_time[..],
-            &now.format("%H:%M:%S").to_string()[..],
-        )
+        if self.lunch {
+            let t1 = diff_time_value(
+                &now.format("%H:%M:%S").to_string()[..],
+                &self.start_lunch_time[..],
+            );
+            let t2 = diff_time_value(
+                &now.format("%H:%M:%S").to_string()[..],
+                &self.end_lunch_time[..],
+            );
+            if t1 >= 0 && t2 <= 0 {
+                return diff_time_value(&self.start_work_time[..], &self.start_lunch_time[..]);
+            } else {
+                diff_time_value(
+                    &self.start_work_time[..],
+                    &now.format("%H:%M:%S").to_string()[..],
+                ) - diff_time_value(&self.start_lunch_time[..], &self.end_lunch_time[..])
+            }
+        } else {
+            diff_time_value(
+                &self.start_work_time[..],
+                &now.format("%H:%M:%S").to_string()[..],
+            )
+        }
     }
     pub fn salary_per_second(&self) -> f64 {
-        (self.monthly_salary as f64 / self.work_day as f64) / (24 * 60 * 60) as f64
+        (self.monthly_salary as f64 / self.work_day as f64) / self.work_time_value() as f64
     }
 
     pub fn replace(&mut self, new: Cfg) {
@@ -81,22 +101,63 @@ fn already_gotit(seconds: f64, cfg: State<'_, CfgState>) -> f64 {
 }
 
 #[command]
-fn load_cfg(cfg: State<'_, CfgState>) -> Cfg {
+fn load_cfg(_app: AppHandle, cfg: State<'_, CfgState>) -> Cfg {
     cfg.0.lock().unwrap().clone()
 }
 
 #[command]
-fn update_cfg(data: Cfg, cfg: State<'_, CfgState>) {
+fn update_cfg(app: AppHandle, data: Cfg, cfg: State<'_, CfgState>) {
     let mut c = cfg.0.lock().unwrap();
-    c.replace(data);
+    c.replace(data.clone());
+    let stores = app.state::<StoreCollection<Wry>>();
+    let path = PathBuf::from("data.bin"); // 替换为你的存储文件路径
+    if let Err(e) = with_store(app.clone(), stores, path, |store| {
+        // 写入数据到 Store
+        match store.insert("cfg".to_string(), serde_json::json!(Cfg { ..data.clone() })) {
+            Ok(_) => {}
+            Err(e) => {
+                print!("insert cfg to store err: {e}")
+            }
+        }
+        Ok(())
+    }) {
+        print!("with store err: {e}")
+    }
 }
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_store::Builder::default().build())
-        .manage(CfgState(Default::default()))
-        //.setup(|app|)
+        //.manage(CfgState(Default::default()))
+        .setup(|app| {
+            let stores = app.state::<StoreCollection<Wry>>();
+            let path = PathBuf::from("data.bin"); // 替换为你的存储文件路径
+
+            with_store(app.handle().clone(), stores, path, |store| {
+                match store.get("cfg") {
+                    Some(data) => {
+                        let cfg_data = serde_json::from_value::<Cfg>(data.clone());
+                        match cfg_data {
+                            Ok(cfg) => {
+                                app.manage(CfgState(Mutex::new(cfg)));
+                            }
+                            Err(e) => {
+                                print!("reade cfg store err: {e}");
+                                app.manage(CfgState(Default::default()));
+                            }
+                        }
+                    }
+                    None => {
+                        app.manage(CfgState(Default::default()));
+                    }
+                }
+                Ok(())
+            })?;
+
+            //app.manage(CfgState(Default::default()));
+            Ok(())
+        })
         .invoke_handler(generate_handler![
             diff_time_value,
             work_time_value,

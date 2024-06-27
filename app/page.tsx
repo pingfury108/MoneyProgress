@@ -28,14 +28,6 @@ export default function Home() {
           setCfg(v);
           setInitialized(true); // 设置已初始化
         });
-      invoke("work_time_value")
-        .then(v => {
-          setProgressMaxValue(Number(v));
-        });
-      invoke("already_gotit", { "seconds": 1 })
-        .then(v => {
-          setSalarySecond(Number(v));
-        });
     }
   }, [initialized]);
 
@@ -53,15 +45,10 @@ export default function Home() {
     };
   }, []);
 
-  function updateCfg(key: string, value: any) {
-    setCfg(produce(cfg, (draft: typeof cfg) => {
-      draft[key] = value;
-    }));
-
+  useEffect(() => {
     invoke("update_cfg", {
       "data": cfg
     }).then();
-
     invoke("work_time_value")
       .then(v => {
         setProgressMaxValue(Number(v));
@@ -70,6 +57,13 @@ export default function Home() {
       .then(v => {
         setSalarySecond(Number(v));
       });
+  }, [cfg])
+
+
+  function updateCfg(key: string, value: any) {
+    setCfg(produce(cfg, (draft: typeof cfg) => {
+      draft[key] = value;
+    }));
   };
 
   return (
@@ -111,10 +105,10 @@ export default function Home() {
         </div>
         <div className="grid grid-cols-6 gap-2 py-1">
           <div className="col-start-2 flex items-center">
-            <Checkbox radius="sm" size="sm" defaultSelected={cfg.lunch} value={String(cfg.lunch)} onChange={(event) => { updateCfg("lunch", !event.target.checked) }}>是否有午休</Checkbox>
+            <Checkbox radius="sm" size="sm" isSelected={cfg.lunch} defaultChecked={cfg.lunch === true} onChange={(event) => { updateCfg("lunch", event.target.checked) }}>是否有午休</Checkbox>
           </div>
         </div>
-        <div className={`grid grid-cols-6 gap-2 py-1 ${!cfg.lunch ? 'block' : 'hidden'}`}>
+        <div className={`grid grid-cols-6 gap-2 py-1 ${cfg.lunch ? 'block' : 'hidden'}`}>
           <div className="container col-end-4 col-span-2">
             <TimeInput label="午休始" labelPlacement="outside-left"
               hourCycle={24}
@@ -142,11 +136,12 @@ export default function Home() {
         </div>
         <div className="text-sm italic pt-3 pl-3" >
           <p>这么看来, 假设一个月工作 {cfg.work_day} 天:</p>
-          <p>您一天能挣 {salary_second * progressMaxValue} </p>
-          <p>您一天有效工时 {progressMaxValue / (60 * 60)} 小时</p>
+          <p>您一天能挣 {(cfg.monthly_salary / cfg.work_day).toFixed(3)}</p>
+          <p>您一天有效工时 {(progressMaxValue / (60 * 60)).toFixed(3)} 小时</p>
           <p>您一秒中能挣 {salary_second.toFixed(3)} </p>
           <p></p>
-          <p>今日已赚: {(salary_second * progressValue).toFixed(3)} </p>
+          <p>今日已上班 {(progressValue / 60 / 60).toFixed(3)} 小时</p>
+          <p>今日已赚 {(salary_second * progressValue).toFixed(3)}</p>
         </div>
       </div >
     </main >
