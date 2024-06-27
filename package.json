@@ -13,16 +13,16 @@
     "@internationalized/date": "^3.5.4",
     "@nextui-org/avatar": "^2.0.29",
     "@nextui-org/checkbox": "^2.1.1",
-    "@nextui-org/date-input": "^2.1.0",
+    "@nextui-org/date-input": "^2.1.1",
     "@nextui-org/input": "^2.2.1",
     "@nextui-org/progress": "^2.0.30",
-    "@nextui-org/react": "^2.4.1",
+    "@nextui-org/react": "^2.4.2",
     "@tauri-apps/api": "^2.0.0-beta.0",
     "framer-motion": "^11.2.10",
     "immer": "^10.1.1",
-    "next": "14.2.3",
-    "react": "^18",
-    "react-dom": "^18"
+    "next": "^14.2.4",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
   },
   "devDependencies": {
     "@types/node": "^20",

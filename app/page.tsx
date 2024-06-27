@@ -1,11 +1,19 @@
 'use client'
 
-import { Checkbox } from "@nextui-org/checkbox";
-import { Input } from "@nextui-org/input";
-import { Progress } from "@nextui-org/progress";
+import { parseTime } from '@internationalized/date';
+import { Checkbox, Input, Progress, TimeInput } from "@nextui-org/react";
 import { invoke } from "@tauri-apps/api/core";
 import { produce } from 'immer';
 import React, { useEffect, useState } from "react";
+
+
+function toTimeValue(s: any) {
+  if (!s) {
+    return parseTime("08:00")
+  }
+  console.log("ccccc", s)
+  return parseTime(s)
+}
 
 export default function Home() {
   const [cfg, setCfg] = useState<any>({});
@@ -61,30 +69,6 @@ export default function Home() {
       });
   };
 
-  const LunchHtml = () => {
-    if (cfg.lunch) {
-      return (
-        <div className="grid grid-cols-6 gap-2 py-1">
-          <div className="container col-end-4 col-span-2">
-            <Input label="午休始" labelPlacement="outside-left"
-              type="time"
-              defaultValue={"12:00:00"}
-              value={cfg.start_lunch_time}
-              onChange={(event) => { updateCfg("start_lunch_time", event?.target.value + ":00") }} />
-          </div>
-          <div className="container col-start-4 col-spna-2">
-            <Input label="午休止" labelPlacement="outside-left"
-              type="time"
-              defaultValue={"14:00:00"}
-              value={cfg.end_lunch_time}
-              onChange={(event) => { updateCfg("end_lunch_time", event?.target.value + ":00") }} />
-          </div>
-        </div>
-      )
-    }
-    return null
-  }
-
   return (
     <main className="container">
       <div className="container text-center pt-10">
@@ -106,22 +90,21 @@ export default function Home() {
         </div>
         <div className="grid grid-cols-6 gap-2 py-1">
           <div className="container col-end-4 col-span-2  w-full">
-            <Input label=<div className="container">上班于</div> labelPlacement="outside-left"
-              type="time"
-              defaultValue={"08:00:00"}
-              value={cfg.start_work_time}
+            <TimeInput label="上班于" labelPlacement="outside-left"
+              hourCycle={24}
+              value={toTimeValue(cfg.start_work_time)}
               onChange={
                 (event) => {
-                  updateCfg("start_work_time", event?.target.value + ":00");
+                  console.log(event.toString())
+                  updateCfg("start_work_time", event.toString());
                 }
               } />
           </div>
           <div className="container col-start-4 col-span-2">
-            <Input label="下班于" labelPlacement="outside-left"
-              type="time"
-              defaultValue={"19:00:00"}
-              value={cfg.end_work_time}
-              onChange={(event) => { updateCfg("end_work_time", event?.target.value + ":00") }} />
+            <TimeInput label="下班于" labelPlacement="outside-left"
+              hourCycle={24}
+              value={toTimeValue(cfg.end_work_time)}
+              onChange={(event) => { updateCfg("end_work_time", event.toString()) }} />
           </div>
         </div>
         <div className="grid grid-cols-6 gap-2 py-1">
@@ -129,7 +112,20 @@ export default function Home() {
             <Checkbox radius="sm" size="sm" value={String(cfg.lunch)} onChange={(event) => { updateCfg("lunch", event.target.checked) }}>是否有午休</Checkbox>
           </div>
         </div>
-        <LunchHtml />
+        <div className={`grid grid-cols-6 gap-2 py-1 ${cfg.lunch ? 'block' : 'hidden'}`}>
+          <div className="container col-end-4 col-span-2">
+            <TimeInput label="午休始" labelPlacement="outside-left"
+              hourCycle={24}
+              value={toTimeValue(cfg.start_lunch_time)}
+              onChange={(event) => { updateCfg("start_lunch_time", event.toString()) }} />
+          </div>
+          <div className="container col-start-4 col-span-2">
+            <TimeInput label="午休止" labelPlacement="outside-left"
+              value={toTimeValue(cfg.end_lunch_time)}
+              hourCycle={24}
+              onChange={(event) => { updateCfg("end_lunch_time", event.toString()) }} />
+          </div>
+        </div>
         <div className="grid grid-cols-6 gap-2 py-1">
           <div className="container col-end-4 col-span-2">
             <Input label="月薪" labelPlacement="outside-left" type="number" placeholder="3000"
