@@ -9,7 +9,7 @@ import React, { useEffect, useState } from "react";
 
 function toTimeValue(s: any) {
   if (!s) {
-    return parseTime("08:00")
+    return parseTime("00:00:00")
   }
   console.log("ccccc", s)
   return parseTime(s)
@@ -18,6 +18,9 @@ function toTimeValue(s: any) {
 export default function Home() {
   const [cfg, setCfg] = useState<any>({});
   const [initialized, setInitialized] = useState(false);
+  const [salary_second, setSalarySecond] = useState(0);
+  const [progressValue, setProgressValue] = useState(0);
+  const [progressMaxValue, setProgressMaxValue] = useState(100);
 
   useEffect(() => {
     if (!initialized) {
@@ -26,12 +29,19 @@ export default function Home() {
           setCfg(v);
           setInitialized(true); // 设置已初始化
         });
+      invoke("work_time_value")
+        .then(v => {
+          setProgressMaxValue(Number(v));
+          console.log(v, "max time value");
+        });
+      invoke("already_gotit", { "seconds": 1 })
+        .then(v => {
+          setSalarySecond(Number(v));
+          console.log("salary second", v);
+        });
     }
   }, [initialized]);
 
-  const [salary_second, setSalarySecond] = useState(0);
-  const [progressValue, setProgressValue] = useState(0);
-  const [progressMaxValue, setProgressMaxValue] = useState(100);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -95,7 +105,6 @@ export default function Home() {
               value={toTimeValue(cfg.start_work_time)}
               onChange={
                 (event) => {
-                  console.log(event.toString())
                   updateCfg("start_work_time", event.toString());
                 }
               } />
