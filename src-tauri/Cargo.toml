@@ -4,7 +4,7 @@ version = "0.1.0"
 description = "上班进度条"
 authors = ["pingfury@outlook.com"]
 license = ""
-repository = "git@github.com:pingfury108/MoneyProgress.git"
+repository = "https://github.com/pingfury108/MoneyProgress.git"
 edition = "2021"
 rust-version = "1.70"
 
