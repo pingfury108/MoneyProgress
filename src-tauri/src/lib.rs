@@ -44,23 +44,29 @@ impl Cfg {
     }
     pub fn already_work_time_value(&self) -> i64 {
         let now = Local::now();
+        let start_time = NaiveTime::parse_from_str(&self.start_lunch_time[..], "%H:%M:%S").unwrap();
+        let end_time = NaiveTime::parse_from_str(&self.end_lunch_time[..], "%H:%M:%S").unwrap();
+        let now_time = now.time();
         if self.lunch {
-            let t1 = diff_time_value(
-                &now.format("%H:%M:%S").to_string()[..],
-                &self.start_lunch_time[..],
-            );
-            let t2 = diff_time_value(
-                &now.format("%H:%M:%S").to_string()[..],
-                &self.end_lunch_time[..],
-            );
-            if t1 >= 0 && t2 <= 0 {
-                return diff_time_value(&self.start_work_time[..], &self.start_lunch_time[..]);
-            } else {
-                diff_time_value(
+            if now_time <= start_time {
+                return diff_time_value(
                     &self.start_work_time[..],
                     &now.format("%H:%M:%S").to_string()[..],
-                ) - diff_time_value(&self.start_lunch_time[..], &self.end_lunch_time[..])
+                );
             }
+            if now_time >= start_time && now_time <= end_time {
+                return diff_time_value(&self.start_work_time[..], &self.start_lunch_time[..]);
+            }
+            if now_time > end_time {
+                return diff_time_value(
+                    &self.start_work_time[..],
+                    &now.format("%H:%M:%S").to_string()[..],
+                ) - diff_time_value(&self.start_lunch_time[..], &self.end_lunch_time[..]);
+            }
+            diff_time_value(
+                &self.start_work_time[..],
+                &now.format("%H:%M:%S").to_string()[..],
+            )
         } else {
             diff_time_value(
                 &self.start_work_time[..],
