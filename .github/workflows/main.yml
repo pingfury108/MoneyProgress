@@ -37,14 +37,19 @@ jobs:
       - name: install frontend dependencies
         run: npm install
 
-      - name: Build the app
-        uses: tauri-apps/tauri-action@v0.2.0
+      - name: install cargo install tauri-cli
+        run: cargo install tauri-cli@^2.0.0-beta
 
+      - name: run tauri build
+        run: cargo tauri build
+
+      - name: release
+        uses: softprops/action-gh-release@v2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tagName: ${{ github.ref_name }} # This only works if your workflow triggers on new tags.
-          releaseName: 'App Name v__VERSION__' # tauri-action replaces \_\_VERSION\_\_ with the app version.
-          releaseBody: 'See the assets to download and install this version.'
-          releaseDraft: true
-          prerelease: false
+          files: |
+            src-tauri/target/release/bundle/appimage/money-progress_0.1.0_amd64.AppImage
+            src-tauri/target/release/bundle/appimage/money-progress_0.1.0_amd64.AppImage
+            src-tauri/target/release/bundle/deb/money-progress_0.1.0_amd64.deb
+            src-tauri/target/release/bundle/rpm/MoneyProgress-0.1.0-1.x86_64.rpm
