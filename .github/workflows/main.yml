@@ -52,6 +52,5 @@ jobs:
         with:
           files: |
             src-tauri/target/release/bundle/appimage/money-progress_0.1.0_amd64.AppImage
-            src-tauri/target/release/bundle/appimage/money-progress_0.1.0_amd64.AppImage
             src-tauri/target/release/bundle/deb/money-progress_0.1.0_amd64.deb
-            src-tauri/target/release/bundle/rpm/MoneyProgress-0.1.0-1.x86_64.rpm
+            src-tauri/target/release/bundle/rpm/money-progress-0.1.0-1.x86_64.rpm
