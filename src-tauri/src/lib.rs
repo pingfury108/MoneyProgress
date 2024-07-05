@@ -3,7 +3,11 @@ use std::sync::Mutex;
 use chrono::{Local, NaiveTime};
 use serde::{Deserialize, Serialize};
 use std::path::PathBuf;
-use tauri::{command, generate_handler, AppHandle, Manager, State, Wry};
+use tauri::{
+    command, generate_handler,
+    menu::{self, MenuItem, Submenu},
+    AppHandle, Manager, State, Wry,
+};
 use tauri_plugin_store::{with_store, StoreCollection};
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
@@ -172,6 +176,30 @@ pub fn run() {
             update_cfg,
             load_cfg,
         ])
+        .menu(|app| {
+            app.on_menu_event(|app, event| match event {
+                _ if event.id().0 == "up_work_8" => {
+                    println!("{}", "一键上班8小时");
+                    let _ = app.emit("up_work_8_event", "ccccc");
+                }
+                _ => {}
+            });
+            menu::Menu::with_items(
+                app,
+                &[&Submenu::with_items(
+                    app,
+                    "一键上班",
+                    true,
+                    &[&MenuItem::with_id(
+                        app,
+                        "up_work_8",
+                        "上班 8 小时",
+                        true,
+                        None::<&str>,
+                    )?],
+                )?],
+            )
+        })
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
