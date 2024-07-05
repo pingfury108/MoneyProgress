@@ -1,6 +1,6 @@
 use std::sync::Mutex;
 
-use chrono::{Local, NaiveTime};
+use chrono::{Duration, Local, NaiveTime};
 use serde::{Deserialize, Serialize};
 use std::path::PathBuf;
 use tauri::{
@@ -116,6 +116,27 @@ fn load_cfg(_app: AppHandle, cfg: State<'_, CfgState>) -> Cfg {
 }
 
 #[command]
+fn infer_end_work_time(_app: AppHandle, cfg: State<'_, CfgState>) -> String {
+    let now = Local::now();
+    let now_time = now.time();
+    let c = cfg.0.lock().unwrap();
+    if c.lunch {
+        let start_time = NaiveTime::parse_from_str(&c.start_lunch_time[..], "%H:%M:%S").unwrap();
+        let end_time = NaiveTime::parse_from_str(&c.end_lunch_time[..], "%H:%M:%S").unwrap();
+        if now_time <= start_time {
+            let t = Duration::hours(8) - (start_time - now_time);
+            return (end_time + t).format("%H:%M:%S").to_string();
+        } else {
+            return (now_time + Duration::hours(8))
+                .format("%H:%M:%S")
+                .to_string();
+        }
+    } else {
+        (now + Duration::hours(8)).format("%H:%M:%S").to_string()
+    }
+}
+
+#[command]
 fn update_cfg(app: AppHandle, data: Cfg, cfg: State<'_, CfgState>) {
     let mut c = cfg.0.lock().unwrap();
     c.replace(data.clone());
@@ -175,11 +196,12 @@ pub fn run() {
             already_gotit,
             update_cfg,
             load_cfg,
+            infer_end_work_time,
         ])
         .menu(|app| {
             app.on_menu_event(|app, event| match event {
                 _ if event.id().0 == "up_work_8" => {
-                    println!("{}", "一键上班8小时");
+                    println!("一键上班8小时");
                     let _ = app.emit("up_work_8_event", "ccccc");
                 }
                 _ => {}
