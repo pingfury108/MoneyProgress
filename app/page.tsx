@@ -201,8 +201,8 @@ export default function Home() {
             <Button onClick={_ => {
               invoke("infer_end_work_time", { "t1": cfg.start_work_time })
                 .then(v => {
-                  let t1 = v[0];
-                  let t2 = v[1];
+                  let t1 = (v as string[])[0];
+                  let t2 = (v as string[])[1];
                   updateCfg("start_work_time", t1);
                   updateCfg("end_work_time", t2);
                 });
