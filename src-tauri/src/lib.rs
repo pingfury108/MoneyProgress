@@ -3,11 +3,7 @@ use std::sync::Mutex;
 use chrono::{Duration, Local, NaiveTime};
 use serde::{Deserialize, Serialize};
 use std::path::PathBuf;
-use tauri::{
-    command, generate_handler,
-    menu::{self, MenuItem, Submenu},
-    AppHandle, Manager, State, Wry,
-};
+use tauri::{command, generate_handler, AppHandle, Manager, State, Wry};
 use tauri_plugin_store::{with_store, StoreCollection};
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
@@ -116,23 +112,51 @@ fn load_cfg(_app: AppHandle, cfg: State<'_, CfgState>) -> Cfg {
 }
 
 #[command]
-fn infer_end_work_time(_app: AppHandle, cfg: State<'_, CfgState>) -> String {
-    let now = Local::now();
-    let now_time = now.time();
+fn infer_end_work_time(
+    t1: Option<String>,
+    _app: AppHandle,
+    cfg: State<'_, CfgState>,
+) -> (String, String) {
+    let now_time = {
+        match t1 {
+            Some(t) => match NaiveTime::parse_from_str(&t[..], "%H:%M:%S") {
+                Ok(t2) => t2,
+                Err(_) => {
+                    let now = Local::now();
+                    now.time()
+                }
+            },
+            None => {
+                let now = Local::now();
+                now.time()
+            }
+        }
+    };
     let c = cfg.0.lock().unwrap();
     if c.lunch {
         let start_time = NaiveTime::parse_from_str(&c.start_lunch_time[..], "%H:%M:%S").unwrap();
         let end_time = NaiveTime::parse_from_str(&c.end_lunch_time[..], "%H:%M:%S").unwrap();
         if now_time <= start_time {
             let t = Duration::hours(8) - (start_time - now_time);
-            return (end_time + t).format("%H:%M:%S").to_string();
+            return (
+                now_time.format("%H:%M:%S").to_string(),
+                (end_time + t).format("%H:%M:%S").to_string(),
+            );
         } else {
-            return (now_time + Duration::hours(8))
-                .format("%H:%M:%S")
-                .to_string();
+            return (
+                now_time.format("%H:%M:%S").to_string(),
+                (now_time + Duration::hours(8))
+                    .format("%H:%M:%S")
+                    .to_string(),
+            );
         }
     } else {
-        (now + Duration::hours(8)).format("%H:%M:%S").to_string()
+        (
+            now_time.format("%H:%M:%S").to_string(),
+            (now_time + Duration::hours(8))
+                .format("%H:%M:%S")
+                .to_string(),
+        )
     }
 }
 
@@ -198,30 +222,6 @@ pub fn run() {
             load_cfg,
             infer_end_work_time,
         ])
-        .menu(|app| {
-            app.on_menu_event(|app, event| match event {
-                _ if event.id().0 == "up_work_8" => {
-                    println!("一键上班8小时");
-                    let _ = app.emit("up_work_8_event", "ccccc");
-                }
-                _ => {}
-            });
-            menu::Menu::with_items(
-                app,
-                &[&Submenu::with_items(
-                    app,
-                    "一键上班",
-                    true,
-                    &[&MenuItem::with_id(
-                        app,
-                        "up_work_8",
-                        "上班 8 小时",
-                        true,
-                        None::<&str>,
-                    )?],
-                )?],
-            )
-        })
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

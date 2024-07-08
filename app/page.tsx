@@ -1,7 +1,7 @@
 'use client';
 import { parseTime } from '@internationalized/date';
-import { Checkbox, Input, Progress, TimeInput } from "@nextui-org/react";
-import { invoke, } from "@tauri-apps/api/core";
+import { Button, Checkbox, Input, Progress, TimeInput } from "@nextui-org/react";
+import { invoke } from "@tauri-apps/api/core";
 import { produce } from 'immer';
 import React, { useEffect, useState } from "react";
 
@@ -52,7 +52,8 @@ export default function Home() {
   useEffect(() => {
     invoke("update_cfg", {
       "data": cfg
-    }).then();
+    }).then(_ => {
+    });
     invoke("work_time_value")
       .then(v => {
         setProgressMaxValue(Number(v));
@@ -97,6 +98,7 @@ export default function Home() {
             <div className='container w-9/12'>
               <TimeInput aria-label="start_work_time" labelPlacement="outside-left"
                 hourCycle={24}
+                granularity="second"
                 value={toTimeValue(cfg.start_work_time)}
                 onChange={
                   (event) => {
@@ -112,6 +114,7 @@ export default function Home() {
             <div className='container w-9/12'>
               <TimeInput aria-label="end_work_time" labelPlacement="outside-left"
                 hourCycle={24}
+                granularity="second"
                 value={toTimeValue(cfg.end_work_time)}
                 onChange={(event) => { updateCfg("end_work_time", event.toString()) }} />
             </div>
@@ -130,6 +133,7 @@ export default function Home() {
             <div className='container w-9/12'>
               <TimeInput aria-label="start_lunch_time" labelPlacement="outside-left"
                 hourCycle={24}
+                granularity="second"
                 value={toTimeValue(cfg.start_lunch_time)}
                 onChange={(event) => { updateCfg("start_lunch_time", event.toString()) }} />
             </div>
@@ -141,6 +145,7 @@ export default function Home() {
             <div className='container w-9/12'>
               <TimeInput aria-label="end_lunch_time" labelPlacement="outside-left"
                 value={toTimeValue(cfg.end_lunch_time)}
+                granularity="second"
                 hourCycle={24}
                 onChange={(event) => { updateCfg("end_lunch_time", event.toString()) }} />
             </div>
@@ -189,6 +194,19 @@ export default function Home() {
                 value={cfg.work_day}
                 onChange={(event) => { updateCfg("work_day", Number(event?.target.value)) }} />
             </div>
+          </div>
+        </div>
+        <div className="grid grid-cols-4 gap-2 py-1">
+          <div className="container col-start-2 col-span-1 w-full flex">
+            <Button onClick={_ => {
+              invoke("infer_end_work_time", { "t1": cfg.start_work_time })
+                .then(v => {
+                  let t1 = v[0];
+                  let t2 = v[1];
+                  updateCfg("start_work_time", t1);
+                  updateCfg("end_work_time", t2);
+                });
+            }}>一键上班</Button>
           </div>
         </div>
         <div className="text-sm italic pt-3 pl-3" >

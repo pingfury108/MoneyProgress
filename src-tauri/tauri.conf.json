@@ -26,7 +26,8 @@
       "title": "MoneyProgress"
     },
     "security": {
-      "csp": null
+      "csp": null,
+      "capabilities": []
     }
   },
   "bundle": {
