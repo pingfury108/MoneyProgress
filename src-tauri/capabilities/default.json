@@ -14,6 +14,7 @@
     "resources:default",
     "image:default",
     "menu:default",
-    "tray:default"
+    "tray:default",
+    "notification:default"
   ]
 }

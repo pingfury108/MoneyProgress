@@ -4,6 +4,7 @@ use chrono::{Duration, Local, NaiveTime};
 use serde::{Deserialize, Serialize};
 use std::path::PathBuf;
 use tauri::{command, generate_handler, AppHandle, Manager, State, Wry};
+use tauri_plugin_notification::NotificationExt;
 use tauri_plugin_store::{with_store, StoreCollection};
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
@@ -97,8 +98,60 @@ fn work_time_value(cfg: State<'_, CfgState>) -> i64 {
 }
 
 #[command]
-fn already_work_time_value(cfg: State<'_, CfgState>) -> i64 {
-    cfg.0.lock().unwrap().already_work_time_value()
+fn already_work_time_value(app: AppHandle, cfg: State<'_, CfgState>) -> i64 {
+    let c = cfg.0.lock().unwrap();
+    {
+        let now = Local::now();
+        let now_time = now.time();
+        // lunch
+        if c.lunch {
+            {
+                let i = diff_time_value(
+                    &now_time.format("%H:%M:%S").to_string()[..],
+                    &c.start_lunch_time[..],
+                );
+                if i == (5 * 60) {
+                    app.notification()
+                        .builder()
+                        .title("钱条")
+                        .body(format!("还有 5 分钟就可以午休啦!"))
+                        .show()
+                        .unwrap();
+                }
+            }
+            // lunch end
+            {
+                let i = diff_time_value(
+                    &now_time.format("%H:%M:%S").to_string()[..],
+                    &c.end_lunch_time[..],
+                );
+                if i == 5 * 60 {
+                    app.notification()
+                        .builder()
+                        .title("钱条")
+                        .body(format!("还有 5 分钟午休就要结束了，要上班了!!!!"))
+                        .show()
+                        .unwrap();
+                }
+            }
+        }
+        // off work
+        {
+            let i = diff_time_value(
+                &now_time.format("%H:%M:%S").to_string()[..],
+                &c.end_work_time[..],
+            );
+            if i == 5 * 60 {
+                app.notification()
+                    .builder()
+                    .title("钱条")
+                    .body(format!("还有 5 分钟午休就要上班啦, 耶✌️!"))
+                    .show()
+                    .unwrap();
+            }
+        }
+    }
+    c.already_work_time_value()
 }
 
 #[command]
@@ -183,6 +236,7 @@ fn update_cfg(app: AppHandle, data: Cfg, cfg: State<'_, CfgState>) {
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
+        .plugin(tauri_plugin_notification::init())
         .plugin(tauri_plugin_store::Builder::default().build())
         //.manage(CfgState(Default::default()))
         .setup(|app| {
