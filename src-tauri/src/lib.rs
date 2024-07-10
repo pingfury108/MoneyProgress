@@ -145,7 +145,7 @@ fn already_work_time_value(app: AppHandle, cfg: State<'_, CfgState>) -> i64 {
                 app.notification()
                     .builder()
                     .title("钱条")
-                    .body(format!("还有 5 分钟午休就要上班啦, 耶✌️!"))
+                    .body(format!("还有 5 分钟就要下班啦, 耶✌️!"))
                     .show()
                     .unwrap();
             }
